@@ -6,7 +6,7 @@ import { createPagesBrowserClient } from "@supabase/auth-helpers-nextjs";
 import { SessionContextProvider, Session } from "@supabase/auth-helpers-react";
 import { ChakraProvider } from "@chakra-ui/react";
 import { Layout } from "@/components/layout";
-import { theme } from "./theme";
+import { theme } from "@/lib/theme";
 import "@/styles/globals.css";
 
 const rubik = Rubik({ subsets: ["latin"] });
