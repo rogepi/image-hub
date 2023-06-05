@@ -63,10 +63,10 @@ export default function GalleriesPage() {
   const onSubmit = handleSubmit(async (data) => {
     const res = await supabase.from("gallery").insert([
       {
-        userId: user?.id,
         name: data.name,
         desc: data.desc,
         category: data.category,
+        user_id: user?.id,
       },
     ]);
     if (res.status === 201) {
@@ -110,7 +110,11 @@ export default function GalleriesPage() {
                 <CardBody p="0">
                   <Center>
                     <Image
-                      src={item?.image?.pop()?.url as string}
+                      src={
+                        item.image.length === 0
+                          ? "/MaterialSymbolsImage.svg"
+                          : (item?.image?.pop()?.url as string)
+                      }
                       alt="null"
                       width={260}
                       height={260}

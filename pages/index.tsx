@@ -32,7 +32,7 @@ export const getServerSideProps: GetServerSideProps = async () => {
   const galleries = (latestGalleries as unknown as GalleriesType).map(
     (item) => ({
       ...item,
-      image: item.image.at(-1)?.url,
+      image: item.image.at(-1)?.url || "/MaterialSymbolsImage.svg",
       count: item.image.length,
       author: item.profile.name,
     })
