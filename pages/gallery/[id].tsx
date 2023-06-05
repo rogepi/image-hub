@@ -4,20 +4,7 @@ import {
   Flex,
   Spacer,
   VStack,
-  Button,
   HStack,
-  Modal,
-  useDisclosure,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalCloseButton,
-  ModalBody,
-  FormControl,
-  ModalFooter,
-  useToast,
-  FormLabel,
-  Input,
   SimpleGrid,
   Card,
   CardBody,
@@ -27,14 +14,15 @@ import {
 } from "@chakra-ui/react";
 import { useRouter } from "next/router";
 import Image from "next/image";
-import { useSupabaseClient, useUser } from "@supabase/auth-helpers-react";
+import {
+  useSession,
+  useSupabaseClient,
+  useUser,
+} from "@supabase/auth-helpers-react";
 import useSWR from "swr";
-import { useForm } from "react-hook-form";
-import { IGallery } from "@/lib/types";
 import { Link } from "@chakra-ui/next-js";
-import { ImageUpload } from "@/components/image-upload";
-import { generateUuid } from "@/lib/utils";
 import { useMemo } from "react";
+import { UploadButton } from "@/components/upload-button";
 
 type FormValues = {
   name: string;
@@ -50,8 +38,8 @@ export default function Gallery() {
   const getGalleries = async (userId: string) => {
     const res = await supabase
       .from("gallery")
-      .select("id,name,category,image(id)")
-      .eq("userId", userId);
+      .select("id,name,category,user_id,image(id)")
+      .eq("user_id", userId);
     if (res.status === 200 && res.data !== null) {
       return res.data;
     } else {
@@ -75,131 +63,47 @@ export default function Gallery() {
     }
   };
 
-  const { data: galleries } = useSWR(user?.id, getGalleries);
-  const gallery = useMemo(() => {
-    return galleries?.find((item) => (item.id = id));
-  }, [galleries, id]);
-  const { data: images, mutate } = useSWR(id, getImages);
+  const { data: galleries, mutate: galleryMutate } = useSWR(
+    user?.id,
+    getGalleries
+  );
 
-  const { isOpen, onOpen, onClose } = useDisclosure();
+  const gallery = galleries?.find((item) => item.id?.toString() === id);
 
-  const {
-    handleSubmit,
-    register,
-    setValue,
-    formState: { isSubmitting },
-    reset,
-  } = useForm<FormValues>();
-  const handleClose = () => {
-    onClose();
-    reset();
-  };
-  const validateImages = (value: File) => {
-    if (!value) {
-      return "Image is required";
-    }
-    const fsMb = value.size / (1024 * 1024);
-    const MAX_FILE_SIZE = 10;
-    if (fsMb > MAX_FILE_SIZE) {
-      return "Max file size 10mb";
-    }
-    return true;
+  const { data: images, mutate: imageMutate } = useSWR(id, getImages);
+
+  const mutate = () => {
+    galleryMutate();
+    imageMutate();
   };
 
-  const toast = useToast();
-  setValue;
-  const onSubmit = handleSubmit(async (formData) => {
-    const { data: uploadData, error } = await supabase.storage
-      .from("images")
-      .upload(
-        `${generateUuid()}.${formData.image.name.split(".").pop()}`,
-        formData.image,
-        {
-          cacheControl: "3600",
-          upsert: false,
-        }
-      );
-    if (error) {
-      toast({
-        title: "Some errors occur",
-        description: error.message,
-        status: "error",
-        position: "top",
-        duration: 2000,
-        isClosable: true,
-      });
-    } else {
-      const { data: imageUrlData } = await supabase.storage
-        .from("images")
-        .createSignedUrl(uploadData.path, 52428800);
-      const { data: imageData } = await supabase
-        .from("image")
-        .upsert({
-          path: uploadData.path,
-          url: imageUrlData?.signedUrl,
-          author: user?.id,
-        })
-        .select();
-      if (imageData) {
-        const res = await supabase.from("gallery_image").insert([
-          {
-            gallery_id: id,
-            image_id: imageData[0]?.id,
-            image_name: formData.name,
-            is_basic: true,
-          },
-        ]);
-
-        if (res.error) {
-          toast({
-            title: "Some errors occur",
-            description: res.error.message,
-            status: "error",
-            position: "top",
-            duration: 2000,
-            isClosable: true,
-          });
-        } else {
-          mutate();
-          toast({
-            title: "Upload image successfully",
-            description: "Everyone will see your awesome image",
-            status: "success",
-            position: "top",
-            duration: 2000,
-            isClosable: true,
-            colorScheme: "teal",
-          });
-          handleClose();
-        }
-      }
-    }
-  });
   return (
     <>
       <Box>
         <Flex alignItems="start">
           <VStack alignItems="start">
-            <Text fontSize="2xl">
-              {gallery?.name}
+            <Flex alignItems="center">
+              <Text flex="1" mr="2" fontSize="2xl">
+                {gallery?.name}
+              </Text>
               <Tag size="sm">{gallery?.category}</Tag>
-            </Text>
+            </Flex>
             <Text>
               {(gallery?.image ? gallery?.image.length : 0) + " photos"}
             </Text>
           </VStack>
           <Spacer />
           <HStack alignItems="end" spacing="5">
-            <Link
-              href="/user"
+            <Text
+              onClick={router.back}
               textDecoration="underline"
               _hover={{ textColor: "gray.600" }}
             >
               Back
-            </Link>
-            <Button onClick={onOpen} colorScheme="teal">
-              Upload
-            </Button>
+            </Text>
+            {user?.id === gallery?.user_id && (
+              <UploadButton id={id as string} mutate={mutate} />
+            )}
           </HStack>
         </Flex>
 
@@ -226,51 +130,6 @@ export default function Gallery() {
           ))}
         </SimpleGrid>
       </Box>
-
-      {/* Upload Modal */}
-      <Modal isOpen={isOpen} onClose={handleClose}>
-        <ModalOverlay />
-        <ModalContent>
-          <ModalHeader>Upload Image</ModalHeader>
-          <ModalCloseButton />
-          <FormControl onSubmit={onSubmit}>
-            <ModalBody>
-              <FormLabel htmlFor="name">Name</FormLabel>
-              <Input
-                id="name"
-                placeholder="Give your image a name"
-                focusBorderColor="teal"
-                {...register("name", {
-                  required: "You should input this",
-                })}
-              />
-              <FormLabel mt="3" htmlFor="images">
-                Pick a image
-              </FormLabel>
-              <ImageUpload
-                id="images"
-                setValue={setValue}
-                register={register("image", {
-                  validate: validateImages,
-                })}
-              ></ImageUpload>
-            </ModalBody>
-            <ModalFooter>
-              <Button onClick={onClose} mr={3}>
-                Close
-              </Button>
-              <Button
-                onClick={onSubmit}
-                type="submit"
-                colorScheme="teal"
-                isLoading={isSubmitting}
-              >
-                Upload
-              </Button>
-            </ModalFooter>
-          </FormControl>
-        </ModalContent>
-      </Modal>
     </>
   );
 }

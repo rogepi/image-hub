@@ -62,6 +62,11 @@ export const RegForm = () => {
           const { data, error } = await supabase.auth.signUp({
             email,
             password,
+            options: {
+              data: {
+                name,
+              },
+            },
           });
           if (error) {
             message({ title: error.message, status: "error" });
