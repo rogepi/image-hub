@@ -19,7 +19,7 @@ export const getServerSideProps: GetServerSideProps = async () => {
   const { data: latestImages } = await supabase
     .from("gallery_image")
     .select("gallery_id, image_name, image(id,url,profile(name))")
-    .eq("isBasic", true)
+    .eq("is_basic", true)
     .order("created_at", { ascending: false })
     .limit(8);
 

@@ -146,6 +146,7 @@ export default function Gallery() {
             gallery_id: id,
             image_id: imageData[0]?.id,
             image_name: formData.name,
+            is_basic: true,
           },
         ]);
 
