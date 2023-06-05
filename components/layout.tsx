@@ -63,10 +63,10 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
                 {username || ""}
               </MenuButton>
               <MenuList>
-                <MenuItem onClick={() => router.push("/user")}>
+                <MenuItem onClick={() => router.push("/user/profile")}>
                   Profile
                 </MenuItem>
-                <MenuItem onClick={() => router.push("/user")}>
+                <MenuItem onClick={() => router.push("/user/galleries")}>
                   Galleries
                 </MenuItem>
                 <MenuItem onClick={() => supabase.auth.signOut()}>

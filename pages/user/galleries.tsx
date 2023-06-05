@@ -29,11 +29,10 @@ import {
 import { useForm } from "react-hook-form";
 import { useSupabaseClient, useUser } from "@supabase/auth-helpers-react";
 import useSWR from "swr";
-import { IGallery } from "@/lib/types";
 import { GALLERY_CATEGORYS } from "@/lib/constants";
 import Link from "next/link";
 
-export default function User() {
+export default function GalleriesPage() {
   const supabase = useSupabaseClient();
   const user = useUser();
 
@@ -41,8 +40,8 @@ export default function User() {
   const getGalleries = async (userId: string) => {
     const res = await supabase
       .from("gallery")
-      .select("id,name,category,image(id)")
-      .eq("userId", userId);
+      .select("id,name,category,image(url)")
+      .eq("user_id", userId);
     if (res.status === 200 && res.data !== null) {
       return res.data;
     } else {
@@ -111,7 +110,7 @@ export default function User() {
                 <CardBody p="0">
                   <Center>
                     <Image
-                      src="/MaterialSymbolsImage.svg"
+                      src={item?.image?.pop()?.url as string}
                       alt="null"
                       width={260}
                       height={260}

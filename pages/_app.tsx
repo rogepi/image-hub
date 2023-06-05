@@ -5,6 +5,7 @@ import { Rubik } from "next/font/google";
 import { createPagesBrowserClient } from "@supabase/auth-helpers-nextjs";
 import { SessionContextProvider, Session } from "@supabase/auth-helpers-react";
 import { ChakraProvider } from "@chakra-ui/react";
+import { Analytics } from "@vercel/analytics/react";
 import { Layout } from "@/components/layout";
 import { theme } from "@/lib/theme";
 import "@/styles/globals.css";
@@ -43,6 +44,7 @@ export default function App({
           </Layout>
         </ChakraProvider>
       </SessionContextProvider>
+      <Analytics />
     </>
   );
 }
