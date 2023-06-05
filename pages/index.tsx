@@ -1,24 +1,25 @@
 import Image from "next/image";
 import { supabase } from "@/lib/supabaseClient";
-import { Box, SimpleGrid, StackDivider, Text, VStack } from "@chakra-ui/react";
+import {
+  Box,
+  Flex,
+  SimpleGrid,
+  StackDivider,
+  Tag,
+  Text,
+  VStack,
+} from "@chakra-ui/react";
+import { Link } from "@chakra-ui/next-js";
 import { GetServerSideProps, InferGetServerSidePropsType } from "next";
+import { ImageCard } from "@/components/image-card";
 
-type GalleriesType = {
-  id: number;
-  name: string;
-  category: string;
-  image: {
-    url: string;
-  }[];
-  profile: {
-    name: string;
-  };
-}[];
-
-export const getServerSideProps: GetServerSideProps = async () => {
+export const getServerSideProps: GetServerSideProps<{
+  images: LatestImagesType[];
+  galleries: GalleriesType[];
+}> = async () => {
   const { data: latestImages } = await supabase
     .from("gallery_image")
-    .select("gallery_id, image_name, image(id,url,profile(name))")
+    .select("gallery_id, image_name,user_id, image(id,url,profile(name))")
     .eq("is_basic", true)
     .order("created_at", { ascending: false })
     .limit(8);
@@ -26,29 +27,29 @@ export const getServerSideProps: GetServerSideProps = async () => {
   const { data: latestGalleries } = await supabase
     .from("gallery")
     .select("id,name,category,image(url),profile(name)")
-    .order("created_at", { ascending: false })
-    .limit(8);
+    .order("created_at", { ascending: false });
 
-  const galleries = (latestGalleries as unknown as GalleriesType).map(
-    (item) => ({
-      ...item,
-      image: item.image.at(-1)?.url,
-      count: item.image.length,
-      author: item.profile.name,
-    })
+  const images = latestImages as unknown as LatestImagesType[];
+
+  const galleries = (latestGalleries as unknown as LatestGalleriesType[]).map(
+    (item) =>
+      ({
+        ...item,
+        image: item.image.at(-1)?.url,
+        count: item.image.length,
+        author: item.profile.name,
+      } as GalleriesType)
   );
-  console.log(galleries);
-
   return {
     props: {
-      latestImages,
+      images,
       galleries,
     },
   };
 };
 
 export default function HomePage({
-  latestImages,
+  images,
   galleries,
 }: InferGetServerSidePropsType<typeof getServerSideProps>) {
   return (
@@ -64,30 +65,15 @@ export default function HomePage({
           spacing="30"
           templateColumns="repeat(auto-fill, minmax(180px, 1fr))"
         >
-          {(latestImages as any[])?.map((item, index) => (
-            <VStack align="start" w="full" h="full" aspectRatio={1} key={index}>
-              <Box
-                key={index}
-                rounded="md"
-                overflow="hidden"
-                position="relative"
-                border="1px"
-                borderColor="gray.100"
-                p="2.5"
-                w="full"
-                h="full"
-                aspectRatio={1}
-              >
-                <Image
-                  src={item.image?.url}
-                  alt={item.image_name}
-                  sizes="100"
-                  fill
-                />
-              </Box>
-              <Text textColor="gray.600">{item.image_name}</Text>
-              <Text>{"@" + item.image.profile.name}</Text>
-            </VStack>
+          {images?.map((item, index) => (
+            <ImageCard
+              id={item.image.id}
+              src={item.image.url}
+              name={item.image_name}
+              author={item.image.profile.name}
+              userId={item.user_id}
+              key={index}
+            />
           ))}
         </SimpleGrid>
       </Box>
@@ -98,26 +84,34 @@ export default function HomePage({
           spacing="30"
           templateColumns="repeat(auto-fill, minmax(180px, 1fr))"
         >
-          {(galleries as any[])?.map((item, index) => (
-            <VStack align="start" w="full" h="full" aspectRatio={1} key={index}>
-              <Box
-                key={index}
-                rounded="md"
-                overflow="hidden"
-                position="relative"
-                border="1px"
-                borderColor="gray.100"
-                p="2.5"
-                w="full"
-                h="full"
-                aspectRatio={1}
-              >
-                <Image src={item.image} alt={item.name} sizes="100" fill />
-              </Box>
-              <Text textColor="gray.600">{item.name}</Text>
-              <Text>{item.count + " photos"}</Text>
-              <Text>{"@" + item.profile.name}</Text>
-            </VStack>
+          {galleries?.map((item, index) => (
+            <Link href={`/gallery/${item.id}`} key={index}>
+              <VStack align="start" w="full" h="full" aspectRatio={1}>
+                <Box
+                  key={index}
+                  rounded="md"
+                  overflow="hidden"
+                  position="relative"
+                  border="1px"
+                  borderColor="gray.100"
+                  p="2.5"
+                  w="full"
+                  h="full"
+                  aspectRatio={1}
+                >
+                  <Image src={item.image} alt={item.name} sizes="100" fill />
+                </Box>
+                <Flex alignItems="center">
+                  <Text flex="1" mr="2" fontWeight="semibold" isTruncated>
+                    {item.name}
+                  </Text>
+                  <Tag size="sm">{item.category}</Tag>
+                </Flex>
+                <Text fontSize="sm" color="gray.600">
+                  {item.count} photos
+                </Text>
+              </VStack>
+            </Link>
           ))}
         </SimpleGrid>
       </Box>
