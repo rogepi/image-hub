@@ -27,6 +27,7 @@ export const getServerSideProps: GetServerSideProps<{
   const { data: latestGalleries } = await supabase
     .from("gallery")
     .select("id,name,category,image(url),profile(name)")
+    .eq("is_public", true)
     .order("created_at", { ascending: false });
 
   const images = latestImages as unknown as LatestImagesType[];

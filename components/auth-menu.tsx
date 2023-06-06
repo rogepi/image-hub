@@ -29,7 +29,10 @@ export const AuthMenu = () => {
     }
   };
 
-  const { data: username } = useSWR(`username_${session?.user.id}`, getProfile);
+  const { data: username } = useSWR(
+    session ? `username_${session?.user.id}` : null,
+    getProfile
+  );
 
   return (
     <Box>

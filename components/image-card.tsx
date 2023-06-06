@@ -20,6 +20,7 @@ import {
 import { useRouter } from "next/router";
 import { useUser } from "@supabase/auth-helpers-react";
 import { saveImage } from "@/lib/utils";
+import { SaveImageButton } from "./save-image-button";
 
 type ImageCardProps = {
   id: number;
@@ -96,14 +97,12 @@ export const ImageCard = ({
                   <Text fontSize="lg">{`@${author}`}</Text>
                 </Box>
                 <Spacer mt={{ base: "3", md: "0" }} />
-                <Box>
-                  <Button mb="3" colorScheme="teal" w="full">
-                    Save
-                  </Button>
+                <VStack>
+                  <SaveImageButton imageId={id} imageName={name} />
                   <Button onClick={() => saveImage(src, name)} w="full">
                     Download
                   </Button>
-                </Box>
+                </VStack>
               </Flex>
             </Flex>
           </ModalBody>

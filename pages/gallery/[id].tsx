@@ -20,13 +20,19 @@ import {
   useUser,
 } from "@supabase/auth-helpers-react";
 import useSWR from "swr";
-import { Link } from "@chakra-ui/next-js";
-import { useMemo } from "react";
 import { UploadButton } from "@/components/upload-button";
 
-type FormValues = {
+type getGalleryType = {
+  id: number;
   name: string;
-  image: File;
+  category: string;
+  user_id: string;
+  image: {
+    id: number;
+  }[];
+  profile: {
+    name: string;
+  };
 };
 
 export default function Gallery() {
@@ -35,24 +41,13 @@ export default function Gallery() {
   const supabase = useSupabaseClient();
   const user = useUser();
 
-  const getGalleries = async (userId: string) => {
-    const res = await supabase
-      .from("gallery")
-      .select("id,name,category,user_id,image(id)")
-      .eq("user_id", userId);
-    if (res.status === 200 && res.data !== null) {
-      return res.data;
-    } else {
-      return [];
-    }
-  };
-
   const getGallery = async (id: string) => {
     const gallery_id = id.split("_").at(1);
     const res = await supabase
       .from("gallery")
-      .select("id,name,category,user_id,image(id)")
-      .eq("id", gallery_id);
+      .select("id,name,category,user_id,image(id),profile(name)")
+      .eq("id", gallery_id)
+      .returns<getGalleryType[]>();
     if (res.status === 200 && res.data !== null) {
       return res.data;
     } else {
@@ -101,7 +96,7 @@ export default function Gallery() {
               </Text>
               <Tag size="sm">{gallery?.category}</Tag>
             </Flex>
-            <Text>{`@${user?.user_metadata.name}`}</Text>
+            <Text>{`@${gallery?.profile?.name}`}</Text>
             <Text fontSize="sm" textColor="gray.500">
               {(gallery?.image ? gallery?.image.length : 0) + " photos"}
             </Text>

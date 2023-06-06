@@ -14,6 +14,7 @@ import {
   ModalHeader,
   ModalOverlay,
   Select,
+  Switch,
   useDisclosure,
   useToast,
 } from "@chakra-ui/react";
@@ -24,6 +25,7 @@ type FormValueType = {
   name: string;
   desc: string;
   category: string;
+  isPublic: boolean;
 };
 
 type CreateGalleryButtonProps = {
@@ -54,6 +56,7 @@ export const CreateGalleryButton = ({
         desc: data.desc,
         category: data.category,
         user_id: user?.id,
+        is_public: data.isPublic,
       },
     ]);
     if (res.status === 201) {
@@ -144,6 +147,17 @@ export const CreateGalleryButton = ({
                   ))}
                 </Select>
                 <FormErrorMessage>{errors.category?.message}</FormErrorMessage>
+              </FormControl>
+
+              <FormControl>
+                <FormLabel mt={3} htmlFor="is_public">
+                  Public
+                </FormLabel>
+                <Switch
+                  colorScheme="teal"
+                  id="is_public"
+                  {...register("isPublic")}
+                />
               </FormControl>
             </ModalBody>
 

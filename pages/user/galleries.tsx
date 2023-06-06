@@ -21,15 +21,14 @@ import {
   Select,
   SimpleGrid,
   Spacer,
+  Tag,
   Text,
   useDisclosure,
   useToast,
   VStack,
 } from "@chakra-ui/react";
-import { useForm } from "react-hook-form";
 import { useSupabaseClient, useUser } from "@supabase/auth-helpers-react";
 import useSWR from "swr";
-import { GALLERY_CATEGORYS } from "@/lib/constants";
 import Link from "next/link";
 import { CreateGalleryButton } from "@/components/create-gallery-button";
 
@@ -41,7 +40,7 @@ export default function GalleriesPage() {
   const getGalleries = async (userId: string) => {
     const res = await supabase
       .from("gallery")
-      .select("id,name,category,image(url)")
+      .select("id,name,category,image(url),is_public")
       .eq("user_id", userId);
     if (res.status === 200 && res.data !== null) {
       return res.data;
@@ -51,49 +50,6 @@ export default function GalleriesPage() {
   };
   const { data, mutate } = useSWR(user?.id, getGalleries);
 
-  // Create
-  const { isOpen, onOpen, onClose } = useDisclosure();
-  const {
-    handleSubmit,
-    register,
-    formState: { isSubmitting },
-    reset,
-  } = useForm();
-
-  const toast = useToast();
-  const onSubmit = handleSubmit(async (data) => {
-    const res = await supabase.from("gallery").insert([
-      {
-        name: data.name,
-        desc: data.desc,
-        category: data.category,
-        user_id: user?.id,
-      },
-    ]);
-    if (res.status === 201) {
-      toast({
-        title: "Create Gallery successfully",
-        description: "You can start uploading photos now",
-        status: "success",
-        position: "top",
-        duration: 2000,
-        isClosable: true,
-        colorScheme: "teal",
-      });
-      onClose();
-      reset();
-      mutate();
-    } else {
-      toast({
-        title: "Some errors occur",
-        description: res.statusText,
-        status: "error",
-        position: "top",
-        duration: 2000,
-        isClosable: true,
-      });
-    }
-  });
   return (
     <>
       <Box>
@@ -112,7 +68,7 @@ export default function GalleriesPage() {
                       src={
                         item.image.length === 0
                           ? "/MaterialSymbolsImage.svg"
-                          : (item?.image?.pop()?.url as string)
+                          : (item?.image?.at(-1)?.url as string)
                       }
                       alt="null"
                       width={260}
@@ -124,8 +80,9 @@ export default function GalleriesPage() {
                   <VStack alignItems="start">
                     <Text fontWeight="semibold" fontSize="lg">
                       {item.name}
+                      {item.is_public && <Tag size="sm">Public</Tag>}
                     </Text>
-                    <Text>{item?.image[0]?.url + " photos"}</Text>
+                    <Text>{item?.image.length + " photos"}</Text>
                   </VStack>
                 </CardFooter>
               </Card>
@@ -133,69 +90,6 @@ export default function GalleriesPage() {
           ))}
         </SimpleGrid>
       </Box>
-
-      {/* Create Modal */}
-      <Modal closeOnOverlayClick={false} isOpen={isOpen} onClose={onClose}>
-        <ModalOverlay />
-        <ModalContent>
-          <FormControl onSubmit={onSubmit}>
-            <ModalHeader>Create A New Gallery</ModalHeader>
-            <ModalCloseButton />
-            <ModalBody>
-              <FormLabel htmlFor="name">Name</FormLabel>
-              <Input
-                id="name"
-                placeholder="Your gallery's name"
-                focusBorderColor="teal"
-                {...register("name", {
-                  required: "Gallery Name Is Required",
-                })}
-              />
-              <FormLabel mt={3} htmlFor="desc">
-                Description
-              </FormLabel>
-              <Input
-                id="desc"
-                placeholder="Introduce your gallery"
-                focusBorderColor="teal"
-                {...register("desc", {
-                  required: "Gallery Name Is Required",
-                })}
-              />
-              <FormLabel mt={3} htmlFor="category">
-                Category
-              </FormLabel>
-              <Select
-                id="category"
-                focusBorderColor="teal"
-                placeContent="The content of your gallery is about..."
-                {...register("category", {
-                  required: "Please Choose A Category",
-                })}
-              >
-                {Object.keys(GALLERY_CATEGORYS).map((item, index) => (
-                  <option value={item} key={index}>
-                    {item}
-                  </option>
-                ))}
-              </Select>
-            </ModalBody>
-            <ModalFooter>
-              <Button onClick={onClose} mr={3}>
-                Close
-              </Button>
-              <Button
-                onClick={onSubmit}
-                type="submit"
-                colorScheme="teal"
-                isLoading={isSubmitting}
-              >
-                Create
-              </Button>
-            </ModalFooter>
-          </FormControl>
-        </ModalContent>
-      </Modal>
     </>
   );
 }
