@@ -47,6 +47,19 @@ export default function Gallery() {
     }
   };
 
+  const getGallery = async (id: string) => {
+    const gallery_id = id.split("_").at(1);
+    const res = await supabase
+      .from("gallery")
+      .select("id,name,category,user_id,image(id)")
+      .eq("id", gallery_id);
+    if (res.status === 200 && res.data !== null) {
+      return res.data;
+    } else {
+      return [];
+    }
+  };
+
   const getImages = async (id: number) => {
     const res = await supabase
       .from("gallery_image")
@@ -64,8 +77,8 @@ export default function Gallery() {
   };
 
   const { data: galleries, mutate: galleryMutate } = useSWR(
-    user?.id,
-    getGalleries
+    `gallery_${id}`,
+    getGallery
   );
 
   const gallery = galleries?.find((item) => item.id?.toString() === id);
@@ -88,13 +101,15 @@ export default function Gallery() {
               </Text>
               <Tag size="sm">{gallery?.category}</Tag>
             </Flex>
-            <Text>
+            <Text>{`@${user?.user_metadata.name}`}</Text>
+            <Text fontSize="sm" textColor="gray.500">
               {(gallery?.image ? gallery?.image.length : 0) + " photos"}
             </Text>
           </VStack>
           <Spacer />
           <HStack alignItems="end" spacing="5">
             <Text
+              cursor="pointer"
               onClick={router.back}
               textDecoration="underline"
               _hover={{ textColor: "gray.600" }}

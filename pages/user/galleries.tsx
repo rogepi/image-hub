@@ -31,6 +31,7 @@ import { useSupabaseClient, useUser } from "@supabase/auth-helpers-react";
 import useSWR from "swr";
 import { GALLERY_CATEGORYS } from "@/lib/constants";
 import Link from "next/link";
+import { CreateGalleryButton } from "@/components/create-gallery-button";
 
 export default function GalleriesPage() {
   const supabase = useSupabaseClient();
@@ -99,9 +100,7 @@ export default function GalleriesPage() {
         <Flex>
           <Text fontSize="2xl">My Galleries</Text>
           <Spacer />
-          <Button onClick={onOpen} colorScheme="teal">
-            Create New
-          </Button>
+          <CreateGalleryButton mutate={mutate} />
         </Flex>
         <SimpleGrid minChildWidth="200px" mt="10" spacing="50">
           {data?.map((item) => (
@@ -126,9 +125,7 @@ export default function GalleriesPage() {
                     <Text fontWeight="semibold" fontSize="lg">
                       {item.name}
                     </Text>
-                    <Text>
-                      {(item.image ? item.image.length : 0) + " photos"}
-                    </Text>
+                    <Text>{item?.image[0]?.url + " photos"}</Text>
                   </VStack>
                 </CardFooter>
               </Card>
