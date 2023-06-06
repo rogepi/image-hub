@@ -50,23 +50,23 @@ export const GallerySettingsButton = ({
     const gallery_id = id.split("_").at(1);
     const res = await supabase
       .from("gallery")
-      .select("id,name,desc,category,user_id,image(id),profile(name)")
+      .select("id,name,desc,category,user_id,is_public,image(id),profile(name)")
       .eq("id", gallery_id)
       .returns<getGalleryType[]>();
     if (res.status === 200 && res.data !== null) {
-      return res.data;
+      return res.data[0];
     } else {
-      return [];
+      return null;
     }
   };
 
   const { data: gallery, mutate } = useSWR(`gallery_${galleryId}`, getGallery);
 
   const defaultValues: FormValueType = {
-    name: gallery?.[0].name || "",
-    desc: gallery?.[0].desc || "",
-    category: gallery?.[0].category || GALLERY_CATEGORYS.Animals,
-    isPublic: gallery?.[0].is_public || false,
+    name: gallery?.name || "",
+    desc: gallery?.desc || "",
+    category: gallery?.category || GALLERY_CATEGORYS.Animals,
+    isPublic: gallery?.is_public || false,
   };
 
   const { isOpen, onOpen, onClose } = useDisclosure();

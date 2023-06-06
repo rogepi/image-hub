@@ -42,7 +42,7 @@ export const ImageUpload = (props: ImageUploadProps) => {
           type={"file"}
           multiple={multiple || false}
           hidden
-          accept={"image/*"}
+          accept={"image/png, image/jpeg, image/webp"}
           {...rest}
           ref={(e) => {
             ref(e);

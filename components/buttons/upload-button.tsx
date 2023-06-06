@@ -149,7 +149,7 @@ export const UploadButton = ({ id, mutate }: UploadButtonProps) => {
                 })}
               />
               <FormLabel mt="3" htmlFor="images">
-                Pick a image
+                Pick a image (png/jpg/webp)
               </FormLabel>
               <ImageUpload
                 id="images"

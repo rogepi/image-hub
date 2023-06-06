@@ -96,6 +96,7 @@ export const SaveImageButton = ({
               {item.name}
             </MenuItem>
           ))}
+          {data?.length === 0 && <MenuItem>No Gallery</MenuItem>}
         </MenuList>
       )}
     </Menu>

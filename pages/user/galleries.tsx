@@ -58,7 +58,11 @@ export default function GalleriesPage() {
           <Spacer />
           <CreateGalleryButton mutate={mutate} />
         </Flex>
-        <SimpleGrid minChildWidth="200px" mt="10" spacing="50">
+        <SimpleGrid
+          mt="10"
+          spacing="30"
+          templateColumns="repeat(auto-fill, minmax(180px, 1fr))"
+        >
           {data?.map((item) => (
             <Link href={`/gallery/${item.id}`} key={item.id}>
               <Card>

@@ -59,9 +59,9 @@ export default function Gallery() {
       .eq("id", gallery_id)
       .returns<getGalleryType[]>();
     if (res.status === 200 && res.data !== null) {
-      return res.data;
+      return res.data[0];
     } else {
-      return [];
+      return null;
     }
   };
 
@@ -78,12 +78,10 @@ export default function Gallery() {
     }
   };
 
-  const { data: galleries, mutate: galleryMutate } = useSWR(
+  const { data: gallery, mutate: galleryMutate } = useSWR(
     `gallery_${id}`,
     getGallery
   );
-
-  const gallery = galleries?.find((item) => item.id?.toString() === id);
 
   const { data: images, mutate: imageMutate } = useSWR(id, getImages);
 
@@ -148,20 +146,6 @@ export default function Gallery() {
               userId={item.user_id}
               key={index}
             />
-            // <Card overflow="hidden" key={index} h="300px">
-            //   <CardBody position="relative">
-            //     <Center>
-            //       <Image src={item.image?.url} alt="null" sizes="100" fill />
-            //     </Center>
-            //   </CardBody>
-            //   <CardFooter>
-            //     <VStack alignItems="start">
-            //       <Text fontWeight="semibold" fontSize="lg">
-            //         {item.image_name}
-            //       </Text>
-            //     </VStack>
-            //   </CardFooter>
-            // </Card>
           ))}
         </SimpleGrid>
       </Box>
