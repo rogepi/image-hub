@@ -63,18 +63,18 @@ export default function GalleriesPage() {
             <Link href={`/gallery/${item.id}`} key={item.id}>
               <Card>
                 <CardBody p="0">
-                  <Center>
+                  <Box p="2.5" w="full" h="full" aspectRatio={1}>
                     <Image
                       src={
                         item.image.length === 0
                           ? "/MaterialSymbolsImage.svg"
                           : (item?.image?.at(-1)?.url as string)
                       }
-                      alt="null"
-                      width={260}
-                      height={260}
+                      alt={item.name}
+                      sizes="100"
+                      fill
                     />
-                  </Center>
+                  </Box>
                 </CardBody>
                 <CardFooter>
                   <VStack alignItems="start">
