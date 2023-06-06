@@ -25,6 +25,7 @@
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "react-hook-form": "^7.44.3",
+    "supabase": "^1.64.8",
     "swr": "^2.1.5"
   },
   "devDependencies": {
