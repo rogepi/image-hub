@@ -2,61 +2,51 @@ import * as React from "react";
 import Image from "next/image";
 import {
   Box,
-  Button,
   Card,
   CardBody,
   CardFooter,
-  Center,
   Flex,
-  FormControl,
-  FormLabel,
-  Input,
-  Modal,
-  ModalBody,
-  ModalCloseButton,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-  ModalOverlay,
-  Select,
   SimpleGrid,
   Spacer,
   Tag,
   Text,
-  useDisclosure,
-  useToast,
   VStack,
 } from "@chakra-ui/react";
 import { useSupabaseClient, useUser } from "@supabase/auth-helpers-react";
 import useSWR from "swr";
 import Link from "next/link";
 import { CreateGalleryButton } from "@/components/buttons/create-gallery-button";
+import { useRouter } from "next/router";
 
 export default function GalleriesPage() {
+  const router = useRouter();
+  const name = router.query.name as string;
   const supabase = useSupabaseClient();
   const user = useUser();
+  const isMe = name === user?.user_metadata.name;
 
   // Get
-  const getGalleries = async (userId: string) => {
+  const getGalleries = async (name: string) => {
     const res = await supabase
       .from("gallery")
-      .select("id,name,category,image(url),is_public")
-      .eq("user_id", userId);
+      .select("id,name,category,image(url),is_public,profile(*)")
+      .eq("profile.name", name)
+      .eq(isMe ? "" : "is_public", true);
     if (res.status === 200 && res.data !== null) {
       return res.data;
     } else {
       return [];
     }
   };
-  const { data, mutate } = useSWR(user?.id, getGalleries);
+  const { data, mutate } = useSWR(name || "", getGalleries);
 
   return (
     <>
       <Box>
         <Flex>
-          <Text fontSize="2xl">My Galleries</Text>
+          <Text fontSize="2xl">{isMe ? "My" : `${name}'s`} Galleries</Text>
           <Spacer />
-          <CreateGalleryButton mutate={mutate} />
+          {isMe && <CreateGalleryButton mutate={mutate} />}
         </Flex>
         <SimpleGrid minChildWidth="200px" mt="10" spacing="50">
           {data?.map((item) => (

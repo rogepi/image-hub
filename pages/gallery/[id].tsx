@@ -6,11 +6,8 @@ import {
   VStack,
   HStack,
   SimpleGrid,
-  Card,
-  CardBody,
-  CardFooter,
-  Center,
   Tag,
+  IconButton,
 } from "@chakra-ui/react";
 import { useRouter } from "next/router";
 import Image from "next/image";
@@ -20,19 +17,32 @@ import {
   useUser,
 } from "@supabase/auth-helpers-react";
 import useSWR from "swr";
-import { UploadButton } from "@/components/upload-button";
+import { UploadButton } from "@/components/buttons/upload-button";
+import { ImageCard } from "@/components/image-card";
+import { SettingsIcon } from "@chakra-ui/icons";
+import { GallerySettingsButton } from "@/components/buttons/gallery-settings-button";
 
-type getGalleryType = {
+export type getGalleryType = {
   id: number;
   name: string;
+  desc: string;
   category: string;
   user_id: string;
+  is_public: boolean;
   image: {
     id: number;
   }[];
   profile: {
     name: string;
   };
+};
+
+type getImagesType = {
+  image_id: number;
+  image_name: string;
+  image: { url: string };
+  profile: { name: string };
+  user_id: string;
 };
 
 export default function Gallery() {
@@ -45,7 +55,7 @@ export default function Gallery() {
     const gallery_id = id.split("_").at(1);
     const res = await supabase
       .from("gallery")
-      .select("id,name,category,user_id,image(id),profile(name)")
+      .select("id,name,desc,category,is_public,user_id,image(id),profile(name)")
       .eq("id", gallery_id)
       .returns<getGalleryType[]>();
     if (res.status === 200 && res.data !== null) {
@@ -58,14 +68,11 @@ export default function Gallery() {
   const getImages = async (id: number) => {
     const res = await supabase
       .from("gallery_image")
-      .select(`image_id,image_name,image(url)`)
-      .eq("gallery_id", id);
+      .select(`image_id,image_name,image(url),profile(name),user_id`)
+      .eq("gallery_id", id)
+      .returns<getImagesType[]>();
     if (res.status === 200 && res.data !== null) {
-      return res.data as unknown as {
-        image_id: string;
-        image_name: string;
-        image: { url: string };
-      }[];
+      return res.data;
     } else {
       return null;
     }
@@ -96,7 +103,14 @@ export default function Gallery() {
               </Text>
               <Tag size="sm">{gallery?.category}</Tag>
             </Flex>
-            <Text>{`@${gallery?.profile?.name}`}</Text>
+
+            <Flex alignItems="center">
+              <Text>{`@${gallery?.profile?.name}`}</Text>
+              <Text mx="3">-</Text>
+              <Text fontSize="xs" textColor="gray.700">
+                {gallery?.desc}
+              </Text>
+            </Flex>
             <Text fontSize="sm" textColor="gray.500">
               {(gallery?.image ? gallery?.image.length : 0) + " photos"}
             </Text>
@@ -112,7 +126,10 @@ export default function Gallery() {
               Back
             </Text>
             {user?.id === gallery?.user_id && (
-              <UploadButton id={id as string} mutate={mutate} />
+              <>
+                <UploadButton id={id as string} mutate={mutate} />
+                <GallerySettingsButton galleryId={Number(id)} />
+              </>
             )}
           </HStack>
         </Flex>
@@ -123,20 +140,28 @@ export default function Gallery() {
           templateColumns="repeat(auto-fill, minmax(200px, 1fr))"
         >
           {images?.map((item, index) => (
-            <Card overflow="hidden" key={index} h="300px">
-              <CardBody position="relative">
-                <Center>
-                  <Image src={item.image?.url} alt="null" sizes="100" fill />
-                </Center>
-              </CardBody>
-              <CardFooter>
-                <VStack alignItems="start">
-                  <Text fontWeight="semibold" fontSize="lg">
-                    {item.image_name}
-                  </Text>
-                </VStack>
-              </CardFooter>
-            </Card>
+            <ImageCard
+              id={item.image_id}
+              src={item.image.url}
+              name={item.image_name}
+              author={item.profile.name}
+              userId={item.user_id}
+              key={index}
+            />
+            // <Card overflow="hidden" key={index} h="300px">
+            //   <CardBody position="relative">
+            //     <Center>
+            //       <Image src={item.image?.url} alt="null" sizes="100" fill />
+            //     </Center>
+            //   </CardBody>
+            //   <CardFooter>
+            //     <VStack alignItems="start">
+            //       <Text fontWeight="semibold" fontSize="lg">
+            //         {item.image_name}
+            //       </Text>
+            //     </VStack>
+            //   </CardFooter>
+            // </Card>
           ))}
         </SimpleGrid>
       </Box>

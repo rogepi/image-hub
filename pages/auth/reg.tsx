@@ -1,4 +1,4 @@
-import { RegForm } from "@/components/form/reg-form";
+import { RegForm } from "@/components/forms/reg-form";
 import { Box } from "@chakra-ui/react";
 
 export default function RegPage() {

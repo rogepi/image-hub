@@ -43,9 +43,6 @@ export const AuthMenu = () => {
           </MenuButton>
 
           <MenuList>
-            <MenuItem onClick={() => router.push("/user/profile")}>
-              Profile
-            </MenuItem>
             <MenuItem onClick={() => router.push("/user/galleries")}>
               Galleries
             </MenuItem>

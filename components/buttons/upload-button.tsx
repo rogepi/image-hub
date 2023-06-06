@@ -14,7 +14,7 @@ import {
   useToast,
 } from "@chakra-ui/react";
 import { useForm } from "react-hook-form";
-import { ImageUpload } from "./image-upload";
+import { ImageUpload } from "../image-upload";
 import { useSupabaseClient, useUser } from "@supabase/auth-helpers-react";
 import { generateUuid } from "@/lib/utils";
 

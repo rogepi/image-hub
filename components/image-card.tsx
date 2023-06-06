@@ -20,7 +20,7 @@ import {
 import { useRouter } from "next/router";
 import { useUser } from "@supabase/auth-helpers-react";
 import { saveImage } from "@/lib/utils";
-import { SaveImageButton } from "./save-image-button";
+import { SaveImageButton } from "./buttons/save-image-button";
 
 type ImageCardProps = {
   id: number;
