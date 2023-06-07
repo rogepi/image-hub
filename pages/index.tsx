@@ -13,7 +13,9 @@ import { Link } from "@chakra-ui/next-js";
 import { GetServerSideProps, InferGetServerSidePropsType } from "next";
 import { ImageCard } from "@/components/image-card";
 
-export const runtime = "edge";
+export const config = {
+  runtime: "edge",
+};
 
 export const getServerSideProps: GetServerSideProps<{
   images: LatestImagesType[];
